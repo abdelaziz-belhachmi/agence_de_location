@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-//start structs
+//declaration des structures
 
  typedef struct Persone {
   char cin[15] ;
@@ -11,8 +11,8 @@
   }Persone;
 
 typedef struct voiture {
-  char matricule[15];
-  char marque[100];
+  char matricule[25];
+  char marque[50];
   int prix_du_jour;
   int duree_location;
   struct voiture *nxt;
@@ -23,12 +23,12 @@ char Identifiacteur_location[25];
   voiture *voiture_louee ;
   Persone Client;
   struct location *next_location;
-   //struct location *prev_location; for doubly 
+   //struct location *prev_location; pour doublement chainee
  }location;
 
-//end structs
-//lkmala d l idea dftar
-// functions
+//fin de declaration structs
+
+//les functions
 
 location *creat_lo_node();
 
@@ -36,25 +36,28 @@ voiture *creat_v_node();
 
 location *Ajouter_location(location *Lc);
 
-int calculer_prix_total(location *Lc);//it return what we need to print in the file
+int calculer_prix_total(location *Lc);//returne le prix a payer par le client cette fonction sera appeler dans enregistrer et afficher les locations
 
-void find_print_prix(location *Lc);//additional fonction that print price for any given cin
+void find_print_prix(location *Lc);// fonction additionelle pour afficher le price pour quellque soit le cin 
 
-void Afficher_liste_locations(location *Lc); // print all as given
+void Afficher_liste_locations(location *Lc); // printf toutes les locations
 
-void Enregistrer_location();// same as afficher jst in file use fprintf instead
+FILE *Enregistrer_location(location *Lc);// comme afficher mais dans un fichier utilisant fprintf 
 
-void Rechercher_location(location *Lc);//easy already done
+void Rechercher_location(location *Lc);//recherche une location et l'affiche.
 
-void Supprimer_location();//derefrence and free()
+location *location_return(location *Lc);//fonction recherche puis returne l'adress de location 
+
+location *Supprimer_location(location *Lc);//derefrence and free()
+
 
 void Menu_general(){
   printf("1. ajouter une location.\n");
   printf("2. Afficher toutes les locations.\n");
   printf("3. Calculer puis afficher le prix total d'un client.\n");
   printf("4. Rechercher location.\n ");
-  printf("5. Supprimer location.\n ");
-  printf("6. Enregistrer une location existante dans un fichier.\n");
+  printf("5. Enregistrer une location existante dans un fichier.\n ");
+  printf("6. Supprimer location.\n");
   printf("7. quiter le program.\n");
 }
 //end fonctions
@@ -63,9 +66,9 @@ int main(){
 int m;
 
 location *Lc= NULL;
-// location *mp ;
+FILE *sps ;
 
-while (1){
+while (1) /*on reste toujour dans while jusque l utulisateur choissisera case 7 pour quiter tous le programe*/ {  
  Menu_general();
 scanf("%d",&m);
 
@@ -79,19 +82,20 @@ case 2:
 Afficher_liste_locations(Lc);
 break;
 
-case 3 :
+case 3:
 find_print_prix(Lc);
 break;
 
-case 4 :
+case 4:
 Rechercher_location(Lc);
 break;
 
-case 5 :
-//
+case 5:
+sps = Enregistrer_location(Lc);
 break;
 
-case 6 :
+case 6:
+Lc = Supprimer_location(Lc);
 break;
 
 case 7:
@@ -112,8 +116,8 @@ printf("\n \n ****invalid choice***** \n \n");
 
 }//end while loop
 
-return 0;// end main()
-}
+return 0;
+}// end main()
 
 /***functions declaration****/
 
@@ -177,33 +181,32 @@ if (head == NULL)
   head = temp;
 } 
 else{
-  p=head; //take the head
+  p=head; //p copy temporaire de head
 
   while (p->nxt != NULL){
   p=p->nxt; // if the next isnt null pass to the next node.
   }
   p->nxt= temp; // when the nxt is null take the node temp jst been made
 }
-n++; // repeat the number of cars rent
+n++; // repeter selon le nombre de voiture le client va louer
 }
-h->voiture_louee = head; // take the head pointer and store it in location.voiture_louee  db chaque location a un client et N voitures .
+h->voiture_louee = head; // enregistrant head dans location.voiture_louee  maintenant chaque location a un client et N voitures (les voitures sont simplement chainee !!) .
 /*-----------
 --*/
 if (Lc == NULL){
-h->next_location = h; // h is a struct location  full but alone and pointing to it self when first time
+h->next_location = h; // h est un node de struct location  plain mais seule qui point sur luis meme si c est la premier fois creant une location
   Lc = h;
 }
 else {
   location *s=Lc;
 while (s->next_location != Lc)
 {
-  /* code */
   s=s->next_location;
 }
 h->next_location = Lc;
 s->next_location = h;
 }
-return Lc;//Lc just got the whole list
+return Lc;//Lc est le head du list
 }
  
  
@@ -214,7 +217,7 @@ return Lc;//Lc just got the whole list
  *
  */
  
- /* print only the price */
+ /* printf le prix a payer par un seul client */
 
 
  void find_print_prix(location *Lc) {
@@ -227,13 +230,13 @@ return Lc;//Lc just got the whole list
  
  }
  else {
- printf("entrer CIN :");
+ printf("\nEntrer CIN :");
  scanf("%s",c);
  
  while (strcmp(Fc->Client.cin,c)!= 0){
  Fc =Fc->next_location; 
 }
- //initialisation voiture incompatible with location !! voiture *Vs = Fc->next_location;
+ 
  if(Fc->voiture_louee == NULL){
  printf("Fc->voiture_louee ==NULL");
  }else {
@@ -247,10 +250,10 @@ return Lc;//Lc just got the whole list
  vv = vv->nxt;
  //Fc->voiture_louee = Fc->voiture_louee->nxt;
  }
- printf("ce client doit payer %d\n",a);
+ printf("\n**Ce client doit payer %d DH\n",a);
  }
  }
- } // end prnt()
+ } // end find_print_prix()
 
  /*
  *
@@ -279,7 +282,7 @@ int calculer_prix_total(location *Lc ) {
  return a;
  
  }
- } // end prnt()
+ } // end ()
 
 /*
 *
@@ -310,6 +313,7 @@ do
 *
 *
 */
+//trouve une location et la printf 
 void Rechercher_location(location *Lc){
 
 
@@ -341,4 +345,105 @@ void Rechercher_location(location *Lc){
 
 }
 
+}
+/*
+*
+*
+* 
+*/
+//trouve une certainne location puis return la 
+location *location_return(location *Lc){
+
+ location *Fc =Lc;
+ char c[15];
+ 
+ if (Fc == NULL ){
+ printf("Fc == NULL");
+ 
+ }
+ else {
+ printf("entrer CIN :");
+ scanf("%s",c);
+ 
+ 
+ while (strcmp(Fc->Client.cin,c)!= 0){
+ Fc =Fc->next_location; 
+}
+}
+return Fc;
+}
+
+
+/*
+enregistre location dans un fichier
+*/
+
+FILE *Enregistrer_location(location *Lc){
+
+location *ff =location_return(Lc) ;
+
+char n[20];
+    printf("\nwrite the file name with the extention .txt");
+    scanf("%s",n);
+
+    FILE *regularTxt = NULL;
+    regularTxt = fopen(n, "a");
+    if (!regularTxt){
+        printf("****error with regtxt");
+     }
+    
+   
+    fprintf(regularTxt,"Identificateur de la location: %s \n Informations sur le client : \n CIN du client : %s \n Nom du client : %s \n Prenom du client : %s \n \n Informations sur les voitures louées :\n Matricule de la voiture\tMarque de la voiture\tPrix par jour\tDurée de la location \n",ff->Identifiacteur_location,ff->Client.cin,ff->Client.name,ff->Client.prenom);
+  
+  voiture *vv ;
+  vv = (struct voiture *) ff->voiture_louee ;
+  
+  while (vv != NULL)
+  {
+    fprintf(regularTxt," %s\t\t\t\t%s\t\t\t%d\t\t%d\n",vv->matricule,vv->marque,vv->prix_du_jour,vv->duree_location);
+    vv = vv->nxt;
+
+  }
+  fprintf(regularTxt,"\n\nPrix total a payer par le client : %d DH \n\n",calculer_prix_total(ff));
+    
+  fclose(regularTxt);
+    return regularTxt;
+}
+
+
+
+location *Supprimer_location(location *Lc){
+printf("veuillez entrer le CIN d'utilisateur a supprimer ci-dessous:\n");
+location *sp = location_return(Lc);// recherche node of cin then return it we need to delete it
+
+if (sp==Lc)//if the sp == head
+{
+location *p= Lc;
+while (p->next_location != Lc)
+{
+p=p->next_location;
+    /* we need to find the node before sp wich is the last node or the node befor the *head Lc */
+}
+
+p->next_location=p->next_location->next_location; // skipping the sp
+
+Lc=p->next_location; // moving the head to the next if next null so the list have 1 node and the new head is null
+free(sp);//free the sp
+
+ }else{//if the sp not the head
+location *p = sp;
+//we jst took the node we need to delete
+
+while (p->next_location != sp)
+{
+  p=p->next_location;
+    /* we just found the node behind sp */
+}
+//we will skipp it in the list
+p->next_location =p->next_location->next_location;
+//now we  will free the sp
+free(sp);
+}
+
+return Lc;
 }
